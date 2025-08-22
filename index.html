@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rurylox Backend – Diagramas Mermaid (Exportar a SVG/PNG)</title>
+  <style>
+    :root {
+      --pad: 24px;
+      --bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      --card: linear-gradient(145deg, #1e293b 0%, #111827 100%);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --border: rgba(148, 163, 184, 0.1);
+      --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      --glow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      scroll-behavior: smooth;
+    }
+    
+    header {
+      padding: 60px 20px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    
+    header h1 {
+      margin: 0 0 16px;
+      font-weight: 900;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #f8fafc 0%, #10b981 50%, #f8fafc 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+      position: relative;
+      z-index: 1;
+    }
+    
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.125rem;
+      font-weight: 500;
+      opacity: 0.9;
+      position: relative;
+      z-index: 1;
+    }
+    
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+    
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin: 32px 0;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.5) 50%, transparent 100%);
+    }
+    
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow), var(--glow);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    
+    .title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .title h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    
+    button {
+      border: 1px solid var(--border);
+      background: linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(30, 41, 59, 0.8) 100%);
+      color: var(--text);
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+      transition: left 0.5s;
+    }
+    
+    button:hover {
+      background: linear-gradient(145deg, var(--accent) 0%, var(--accent-hover) 100%);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+    
+    button:hover::before {
+      left: 100%;
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .mermaid {
+      background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: var(--pad);
+      overflow: auto;
+      position: relative;
+      min-height: 300px;
+    }
+    
+    .mermaid::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      border-radius: 16px;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 0.875rem;
+      border-top: 1px solid var(--border);
+      margin-top: 60px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.8) 100%);
+      backdrop-filter: blur(10px);
+    }
+    
+    .small {
+      font-size: 0.75rem;
+      color: var(--muted);
+      opacity: 0.8;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      header {
+        padding: 40px 20px 30px;
+      }
+      
+      .card {
+        padding: 24px;
+        margin: 20px 0;
+        border-radius: 16px;
+      }
+      
+      .title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+      
+      .title h2 {
+        font-size: 1.25rem;
+      }
+      
+      .actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      
+      button {
+        flex: 1;
+        min-width: 120px;
+      }
+    }
+    
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-hover);
+    }
+    
+    /* Loading Animation */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .loading {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: true, theme: "dark", securityLevel: "loose", fontFamily: "Inter, ui-sans-serif, system-ui" });
+
+    function downloadBlob(data, filename, type) {
+      const blob = new Blob([data], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+    }
+
+    function cleanFilename(s) {
+      return s.toLowerCase().replace(/[^\w\-]+/g, "-").replace(/\-+/g, "-").replace(/^\-+|\-+$/g, "").slice(0, 80) || "diagrama";
+    }
+
+    async function svgStringToPng(svgText, scale=2) {
+      return new Promise((resolve, reject) => {
+        const svgBlob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(svgBlob);
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext("2d");
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => { if (!blob) { reject(new Error("Fallo al convertir a PNG")); return; } resolve(blob); URL.revokeObjectURL(url); }, "image/png", 1.0);
+        };
+        img.onerror = (e) => reject(e);
+        img.src = url;
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      setTimeout(() => {
+        document.querySelectorAll(".card").forEach((card, idx) => {
+          const title = card.querySelector(".title h2")?.textContent || `Diagrama ${idx+1}`;
+          const base = cleanFilename(title);
+          const actions = card.querySelector(".actions");
+          const container = card.querySelector(".rendered");
+
+          const btnSvg = document.createElement("button");
+          btnSvg.textContent = "Descargar SVG";
+          btnSvg.addEventListener("click", async () => {
+            const svg = container.querySelector("svg");
+            if (!svg) return alert("Aún no se ha renderizado el diagrama.");
+            const clone = svg.cloneNode(true);
+            clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+            const serializer = new XMLSerializer();
+            const svgText = serializer.serializeToString(clone);
+            downloadBlob(svgText, `${base}.svg`, "image/svg+xml;charset=utf-8");
+          });
+
+          const btnPng = document.createElement("button");
+          btnPng.textContent = "Descargar PNG";
+          btnPng.addEventListener("click", async () => {
+            const svg = container.querySelector("svg");
+            if (!svg) return alert("Aún no se ha renderizado el diagrama.");
+            const serializer = new XMLSerializer();
+            const svgText = serializer.serializeToString(svg);
+            try {
+              const pngBlob = await svgStringToPng(svgText, 2);
+              const url = URL.createObjectURL(pngBlob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `${base}.png`;
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+            } catch(e) { alert("No se pudo exportar a PNG."); console.error(e); }
+          });
+
+          actions.appendChild(btnSvg);
+          actions.appendChild(btnPng);
+        });
+      }, 300);
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <h1>🔧 Diagramas de Flujo de Datos – Backend Rurylox</h1>
+    <p>Arquitectura del servidor, APIs y servicios con Mermaid.</p>
+  </header>
+  <main>
+    <section class="card">
+      <div class="title"><h2>🏗️ Arquitectura General del Backend</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+graph TB
+    Client[🌐 Cliente/Frontend] --> LoadBalancer[⚖️ Load Balancer]
+    LoadBalancer --> Server[🚀 Express Server]
+    Server --> Router[🔀 Router]
+    Router --> AuthMiddleware[🔐 Auth Middleware]
+    AuthMiddleware --> Controllers[🎮 Controllers]
+    
+    subgraph "🎮 Controllers"
+        AuthController[🔑 Auth Controller]
+        UserController[👤 User Controller]
+        SpaceController[📁 Space Controller]
+        PaymentController[💳 Payment Controller]
+        AIController[🤖 AI Controller]
+        WebhookController[🔗 Webhook Controller]
+    end
+    
+    Controllers --> Services[⚙️ Services]
+    
+    subgraph "⚙️ Services"
+        AuthService[🔐 Auth Service]
+        UserService[👥 User Service]
+        SpaceService[📂 Space Service]
+        PaymentService[💰 Payment Service]
+        AIService[🧠 AI Service]
+        DeployService[🚀 Deploy Service]
+    end
+    
+    Services --> Database[(🗄️ PostgreSQL)]
+    Services --> Redis[(🔴 Redis Cache)]
+    Services --> ExternalAPIs[🌍 External APIs]
+    
+    subgraph "🌍 External APIs"
+        OAuth[🔑 OAuth Providers]
+        MercadoPago[💰 MercadoPago]
+        OpenAI[🤖 OpenAI]
+        Vercel[🚀 Vercel]
+    end
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h2>🔄 Flujo de Autenticación Backend</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+sequenceDiagram
+    participant C as Cliente
+    participant S as Server
+    participant A as Auth Service
+    participant O as OAuth Provider
+    participant DB as Database
+    participant R as Redis
+    
+    C->>S: GET /api/auth/login
+    S->>A: Generar URLs OAuth
+    A->>C: URLs de proveedores
+    C->>O: Redirección OAuth
+    O->>S: GET /api/auth/callback
+    S->>A: Procesar callback
+    A->>O: Intercambiar código por token
+    O->>A: Datos del usuario
+    A->>DB: Crear/actualizar usuario
+    A->>R: Guardar sesión
+    A->>S: JWT token
+    S->>C: Token + redirección
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h2>📁 Flujo de Gestión de Espacios</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+sequenceDiagram
+    participant C as Cliente
+    participant S as Server
+    participant SC as Space Controller
+    participant SS as Space Service
+    participant DB as Database
+    participant AI as AI Service
+    
+    C->>S: GET /api/spaces
+    S->>SC: Listar espacios
+    SC->>SS: Obtener espacios del usuario
+    SS->>DB: Query espacios
+    DB->>SS: Datos espacios
+    SS->>SC: Lista espacios
+    SC->>C: JSON espacios
+    
+    C->>S: POST /api/spaces
+    S->>SC: Crear espacio
+    SC->>AI: Generar código inicial
+    AI->>SC: Código generado
+    SC->>SS: Guardar espacio
+    SS->>DB: INSERT espacio
+    DB->>SS: ID espacio
+    SS->>SC: Espacio creado
+    SC->>C: JSON espacio
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h2>🤖 Flujo de Servicios de IA</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+sequenceDiagram
+    participant C as Cliente
+    participant S as Server
+    participant AI as AI Controller
+    participant AIS as AI Service
+    participant OpenAI as OpenAI API
+    participant DB as Database
+    
+    C->>S: POST /api/ask-ai/generate
+    S->>AI: Procesar prompt
+    AI->>AIS: Generar código
+    AIS->>OpenAI: Enviar prompt
+    OpenAI->>AIS: Código generado
+    AIS->>DB: Guardar historial
+    AIS->>AI: Código procesado
+    AI->>C: JSON con código
+    
+    C->>S: POST /api/fix-error
+    S->>AI: Corregir error
+    AI->>AIS: Analizar error
+    AIS->>OpenAI: Prompt corrección
+    OpenAI->>AIS: Código corregido
+    AIS->>AI: Solución
+    AI->>C: Código corregido
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h2>💳 Flujo de Pagos con MercadoPago</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+sequenceDiagram
+    participant C as Cliente
+    participant S as Server
+    participant PC as Payment Controller
+    participant PS as Payment Service
+    participant MP as MercadoPago
+    participant DB as Database
+    participant WH as Webhook
+    
+    C->>S: POST /api/payment/create-checkout
+    S->>PC: Crear sesión pago
+    PC->>PS: Generar preferencia
+    PS->>MP: Crear preferencia
+    MP->>PS: URL checkout
+    PS->>DB: Guardar transacción
+    PS->>PC: URL generada
+    PC->>C: URL checkout
+    
+    C->>MP: Completar pago
+    MP->>WH: POST /api/webhook/mercadopago
+    WH->>PS: Procesar notificación
+    PS->>MP: Verificar pago
+    MP->>PS: Estado pago
+    PS->>DB: Actualizar suscripción
+    PS->>WH: Confirmación
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h2>🗄️ Modelo de Base de Datos</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+erDiagram
+    USERS {
+        id SERIAL PK
+        email VARCHAR
+        name VARCHAR
+        avatar_url VARCHAR
+        provider VARCHAR
+        provider_id VARCHAR
+        subscription_type VARCHAR
+        subscription_status VARCHAR
+        created_at TIMESTAMP
+        updated_at TIMESTAMP
+    }
+    
+    SPACES {
+        id SERIAL PK
+        user_id INTEGER FK
+        name VARCHAR
+        description TEXT
+        html_content TEXT
+        css_content TEXT
+        js_content TEXT
+        is_public BOOLEAN
+        deploy_url VARCHAR
+        created_at TIMESTAMP
+        updated_at TIMESTAMP
+    }
+    
+    PAYMENTS {
+        id SERIAL PK
+        user_id INTEGER FK
+        mercadopago_id VARCHAR
+        amount DECIMAL
+        status VARCHAR
+        subscription_type VARCHAR
+        created_at TIMESTAMP
+        updated_at TIMESTAMP
+    }
+    
+    AI_INTERACTIONS {
+        id SERIAL PK
+        user_id INTEGER FK
+        space_id INTEGER FK
+        prompt TEXT
+        response TEXT
+        type VARCHAR
+        created_at TIMESTAMP
+    }
+    
+    USERS ||--o{ SPACES : owns
+    USERS ||--o{ PAYMENTS : makes
+    USERS ||--o{ AI_INTERACTIONS : creates
+    SPACES ||--o{ AI_INTERACTIONS : relates_to
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h2>🔗 Endpoints de la API</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+graph LR
+    subgraph "🔐 Auth Endpoints"
+        AuthLogin["/api/auth/login"]
+        AuthCallback["/api/auth/callback"]
+        AuthLogout["/api/auth/logout"]
+    end
+    
+    subgraph "👤 User Endpoints"
+        UserProfile["/api/user"]
+        UserUpdate["/api/user/profile"]
+        UserUsage["/api/user/usage"]
+        UserSubscription["/api/user/subscription"]
+    end
+    
+    subgraph "📁 Space Endpoints"
+        SpacesList["/api/spaces"]
+        SpaceCreate["/api/spaces"]
+        SpaceGet["/api/spaces/:id"]
+        SpaceUpdate["/api/spaces/:id"]
+        SpaceDelete["/api/spaces/:id"]
+    end
+    
+    subgraph "🤖 AI Endpoints"
+        AIGenerate["/api/ask-ai/generate"]
+        AIFixError["/api/fix-error"]
+        AIRedesign["/api/re-design"]
+    end
+    
+    subgraph "💳 Payment Endpoints"
+        PaymentCheckout["/api/payment/create-checkout"]
+        PaymentPortal["/api/payment/portal"]
+        PaymentWebhook["/api/webhook/mercadopago"]
+    end
+    
+    subgraph "🚀 Deploy Endpoints"
+        Deploy["/api/deploy"]
+        DeployStatus["/api/deploy/status"]
+    end
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h2>⚙️ Middleware y Validaciones</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+graph TD
+    Request[📥 Request] --> CORS[🌐 CORS Middleware]
+    CORS --> RateLimit[⏱️ Rate Limiting]
+    RateLimit --> BodyParser[📝 Body Parser]
+    BodyParser --> Auth{🔐 Auth Required?}
+    
+    Auth -->|Yes| ValidateToken[🔍 Validate JWT]
+    Auth -->|No| Controller[🎮 Controller]
+    
+    ValidateToken --> TokenValid{✅ Token Valid?}
+    TokenValid -->|Yes| CheckSubscription[💳 Check Subscription]
+    TokenValid -->|No| Unauthorized[❌ 401 Unauthorized]
+    
+    CheckSubscription --> HasAccess{🎫 Has Access?}
+    HasAccess -->|Yes| Controller
+    HasAccess -->|No| Forbidden[🚫 403 Forbidden]
+    
+    Controller --> Validation[✅ Input Validation]
+    Validation --> Business[💼 Business Logic]
+    Business --> Response[📤 Response]
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h2>🔄 Estados de Suscripción</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+stateDiagram-v2
+    [*] --> Free
+    Free --> PendingPayment : Upgrade Request
+    PendingPayment --> Small : Payment Success
+    PendingPayment --> Medium : Payment Success
+    PendingPayment --> Pro : Payment Success
+    PendingPayment --> Free : Payment Failed
+    
+    Small --> PendingUpgrade : Upgrade Request
+    Medium --> PendingUpgrade : Upgrade Request
+    Pro --> PendingDowngrade : Downgrade Request
+    
+    PendingUpgrade --> Medium : Payment Success
+    PendingUpgrade --> Pro : Payment Success
+    PendingUpgrade --> Small : Payment Failed
+    
+    PendingDowngrade --> Small : Downgrade Success
+    PendingDowngrade --> Medium : Downgrade Success
+    PendingDowngrade --> Free : Cancellation
+    
+    Small --> Expired : Payment Failed
+    Medium --> Expired : Payment Failed
+    Pro --> Expired : Payment Failed
+    Expired --> Free : Grace Period End
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h2>🚀 Flujo de Despliegue</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+sequenceDiagram
+    participant C as Cliente
+    participant S as Server
+    participant DS as Deploy Service
+    participant V as Vercel API
+    participant DB as Database
+    
+    C->>S: POST /api/deploy
+    S->>DS: Iniciar despliegue
+    DS->>V: Crear proyecto Vercel
+    V->>DS: Proyecto creado
+    DS->>V: Subir archivos
+    V->>DS: Archivos subidos
+    DS->>V: Iniciar build
+    V->>DS: Build iniciado
+    DS->>DB: Guardar estado deploy
+    DS->>C: Deploy iniciado
+    
+    V->>DS: Build completado
+    DS->>V: Obtener URL
+    V->>DS: URL de producción
+    DS->>DB: Actualizar URL
+    DS->>C: Deploy completado
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h2>📊 Monitoreo y Logs</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+graph TB
+    subgraph "📊 Monitoring"
+        Requests[📥 HTTP Requests]
+        Errors[❌ Error Tracking]
+        Performance[⚡ Performance]
+        Database[🗄️ DB Queries]
+    end
+    
+    subgraph "📝 Logging"
+        AccessLogs[🌐 Access Logs]
+        ErrorLogs[🚨 Error Logs]
+        AuditLogs[🔍 Audit Logs]
+        AILogs[🤖 AI Interaction Logs]
+    end
+    
+    subgraph "🔔 Alerting"
+        HighErrorRate[📈 High Error Rate]
+        SlowQueries[🐌 Slow Queries]
+        HighMemory[💾 High Memory Usage]
+        FailedPayments[💳 Failed Payments]
+    end
+    
+    Requests --> AccessLogs
+    Errors --> ErrorLogs
+    Performance --> AuditLogs
+    Database --> AuditLogs
+    
+    ErrorLogs --> HighErrorRate
+    Database --> SlowQueries
+    Performance --> HighMemory
+    Errors --> FailedPayments
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="title"><h2>🔒 Seguridad y Validaciones</h2><div class="actions"></div></div>
+      <div class="mermaid rendered">
+graph TD
+    subgraph "🔐 Authentication"
+        JWT[🎫 JWT Tokens]
+        OAuth[🔑 OAuth 2.0]
+        Sessions[📝 Session Management]
+    end
+    
+    subgraph "🛡️ Authorization"
+        RBAC[👥 Role-Based Access]
+        Permissions[🎯 Permissions]
+        Subscriptions[💳 Subscription Limits]
+    end
+    
+    subgraph "🔒 Data Protection"
+        Encryption[🔐 Data Encryption]
+        Sanitization[🧹 Input Sanitization]
+        Validation[✅ Schema Validation]
+    end
+    
+    subgraph "🚨 Security Monitoring"
+        RateLimit[⏱️ Rate Limiting]
+        Firewall[🔥 WAF]
+        Intrusion[🕵️ Intrusion Detection]
+    end
+    
+    JWT --> RBAC
+    OAuth --> Sessions
+    RBAC --> Permissions
+    Permissions --> Subscriptions
+    
+    Encryption --> Validation
+    Sanitization --> Validation
+    
+    RateLimit --> Firewall
+    Firewall --> Intrusion
+      </div>
+    </section>
+
+  </main>
+  <footer>Hecho con 💚 | Backend Rurylox | Mermaid v10 | Exportación local</footer>
+</body>
+</html>
